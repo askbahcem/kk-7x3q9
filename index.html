@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0020">
+<meta name="robots" content="noindex,nofollow">
+<title>💌 Kalbin Kapısı</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0020;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-family:'Segoe UI',sans-serif;
+  color:#ffcce5;overflow-y:auto}
+.fh{position:fixed;pointer-events:none;animation:fhA linear forwards;z-index:0}
+@keyframes fhA{from{opacity:.5}to{transform:translateY(-110vh);opacity:0}}
+.screen{display:none;flex-direction:column;align-items:center;gap:14px;
+  width:100%;max-width:740px;padding:14px;z-index:1}
+.screen.on{display:flex;margin:auto 0}
+#s1{max-width:1000px}
+#s3{max-width:960px}
+.panel{background:linear-gradient(135deg,#150028,#250048);border:2px solid #ff69b4;
+  border-radius:20px;padding:22px 28px;box-shadow:0 0 40px #ff69b440;width:100%;text-align:center}
+h1{font-size:26px;color:#ff69b4;text-shadow:0 0 16px #ff69b4;margin-bottom:8px}
+h2{font-size:19px;color:#ff69b4;text-shadow:0 0 10px #ff69b4;margin-bottom:6px}
+p{font-size:14px;color:#cc99cc;line-height:1.6}
+.badge{display:inline-block;background:linear-gradient(135deg,#ff1493,#6a0dad);color:white;
+  font-size:11px;font-weight:bold;padding:3px 12px;border-radius:20px;letter-spacing:1px;margin-bottom:8px}
+.pdots{display:flex;gap:8px;justify-content:center}
+.pdot{width:30px;height:7px;border-radius:4px;background:#333;transition:background .3s}
+.pdot.d{background:#ff69b4;box-shadow:0 0 8px #ff69b4}.pdot.a{background:#ffb6d9}
+.btn{background:linear-gradient(135deg,#ff69b4,#ff1493);color:white;border:none;
+  padding:11px 26px;font-size:14px;border-radius:50px;cursor:pointer;font-weight:bold;
+  box-shadow:0 4px 18px #ff69b460;transition:transform .15s,box-shadow .15s;margin:4px}
+.btn:hover{transform:scale(1.05);box-shadow:0 6px 26px #ff69b490}
+.btn.ghost{background:transparent;border:2px solid #ff69b4;color:#ff69b4}
+.inp{width:100%;padding:11px 18px;background:#1a0035;border:2px solid #8844cc;
+  border-radius:50px;color:#ffcce5;font-size:15px;text-align:center;outline:none;transition:border-color .3s}
+.inp:focus{border-color:#ff69b4}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#ff1493,#6a0dad);color:white;padding:10px 24px;
+  border-radius:50px;font-size:14px;font-weight:bold;box-shadow:0 4px 20px #ff69b480;
+  opacity:0;pointer-events:none;transition:opacity .3s;z-index:999}
+#toast.on{opacity:1}
+#fwc{position:fixed;inset:0;pointer-events:none;z-index:0}
+/* char select */
+.charopts{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.charopt{background:#1e0040;border:3px solid #6633aa;border-radius:16px;padding:14px 18px;
+  cursor:pointer;font-size:32px;transition:border-color .2s,transform .15s;min-width:86px;line-height:1.4}
+.charopt:hover,.charopt.sel{border-color:#ff69b4;transform:scale(1.08);background:#2d0055}
+/* memory cards */
+#mjGrid{display:grid;gap:12px;justify-content:center;margin:12px auto;
+  grid-template-columns:repeat(var(--cols,4),var(--cs,100px))}
+.card{width:var(--cs,100px);height:var(--cs,100px);perspective:900px;cursor:pointer}
+.ci{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.card.flip .ci{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:16px;display:flex;align-items:center;justify-content:center;border:2px solid #ff69b4}
+.back{background:linear-gradient(135deg,#4a0085,#25004a);font-size:calc(var(--cs,100px)*.4);
+  box-shadow:inset 0 0 18px #ff69b430;transition:box-shadow .2s,border-color .2s}
+.card:not(.flip):hover .back{box-shadow:0 0 22px #ff69b4aa,inset 0 0 18px #ff69b450}
+.front{transform:rotateY(180deg);background:linear-gradient(135deg,#6a0dad,#3d0070);
+  font-size:calc(var(--cs,100px)*.5)}
+.front img{width:76%;height:76%;object-fit:contain;pointer-events:none;user-select:none}
+.card.matched .front{border-color:#ffd700;box-shadow:0 0 22px #ffd700aa}
+.card{transition:opacity .6s,transform .6s}
+.card.gone{opacity:0;transform:scale(.3);pointer-events:none}
+.card.hint .back{border-color:#00ccff;box-shadow:0 0 24px #00ccff}
+@keyframes pop{0%,100%{transform:rotateY(180deg) scale(1)}50%{transform:rotateY(180deg) scale(1.12)}}
+/* word puzzle */
+#sentArea{min-height:50px;border:2px dashed #6633aa;border-radius:12px;padding:10px;
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;
+  background:#1a0035;transition:border-color .3s;margin:10px 0}
+#sentArea.ok{border-color:#ff69b4;box-shadow:0 0 14px #ff69b460}
+#wordBank{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0}
+.wt{background:linear-gradient(135deg,#2d0060,#1e0045);border:2px solid #8844cc;color:#ffccee;
+  padding:7px 13px;border-radius:24px;font-size:14px;cursor:pointer;
+  transition:border-color .15s,transform .1s;user-select:none}
+.wt:hover{border-color:#ff69b4;transform:translateY(-2px)}
+.wt.used{opacity:.3;pointer-events:none}
+.wt.ins{background:linear-gradient(135deg,#550033,#330022);border-color:#ff69b4;color:#ffb6d9}
+/* maze */
+#mazeCanvas{border:2px solid #ff69b4;border-radius:10px;box-shadow:0 0 20px #ff69b440;display:block}
+.arrows{display:grid;grid-template-areas:". u ." "l . r" ". d .";gap:6px;margin-top:10px}
+.abtn{width:46px;height:46px;background:linear-gradient(135deg,#330060,#1e0040);
+  border:2px solid #8844cc;border-radius:10px;font-size:20px;cursor:pointer;color:white;
+  transition:background .15s,transform .1s}
+.abtn:hover,.abtn:active{background:linear-gradient(135deg,#ff1493,#6a0dad);transform:scale(1.1)}
+/* final */
+#letter{background:linear-gradient(160deg,#1e0040,#0d0025);border:2px solid #ff69b4;
+  border-radius:20px;padding:30px 34px;max-width:560px;box-shadow:0 0 50px #ff69b460;text-align:center}
+#lText{font-size:15px;color:#ffddee;line-height:2;white-space:pre-line;font-style:italic}
+#lTitle{font-size:22px;color:#ff69b4;text-shadow:0 0 16px #ff69b4;margin-bottom:14px}
+.seal{font-size:44px;animation:sp 1.5s ease-in-out infinite;display:block;margin-bottom:10px}
+@keyframes sp{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+#quotes{margin-top:18px;padding-top:14px;border-top:1px solid #440066;
+  font-size:14px;color:#bb88cc;font-style:italic;min-height:38px;transition:opacity .6s}
+
+/* müzik çalar */
+#mp{position:fixed;top:10px;right:10px;z-index:1000;width:300px;max-width:calc(100vw - 20px);
+  background:rgba(21,0,40,.95);border:2px solid #ff69b4;border-radius:18px;padding:10px 14px 12px;
+  box-shadow:0 0 22px #ff69b455;backdrop-filter:blur(6px)}
+#mp button{background:none;border:none;color:#ffb6d9;cursor:pointer;line-height:1;border-radius:50%;transition:transform .12s,background .12s}
+#mp button:hover{transform:scale(1.12);background:#ff69b430}
+#mpHead{display:flex;align-items:center;gap:10px}
+#mpIcon{font-size:26px;flex:none;animation:none}
+#mp.playing #mpIcon{animation:sp 1.6s ease-in-out infinite}
+#mpInfo{flex:1;min-width:0;text-align:left}
+#mpTitle{font-size:14px;font-weight:bold;color:#ffd9ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mpArtist{font-size:12px;color:#cc99cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:15px}
+#mpMin{font-size:15px;padding:4px 7px;flex:none}
+#mpProg{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:#aa88cc}
+#mpSeek{flex:1;accent-color:#ff69b4;cursor:pointer;height:4px}
+#mpCtl{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
+#mpCtl button{font-size:20px;padding:6px 9px}
+#mpPlay{font-size:24px!important;background:linear-gradient(135deg,#ff69b4,#ff1493)!important;color:#fff!important;width:46px;height:46px;padding:0!important;box-shadow:0 3px 14px #ff69b480}
+#mpVolRow{display:flex;align-items:center;gap:6px;margin-top:6px}
+#mpVolRow button{font-size:16px;padding:3px 6px}
+#mpVol{flex:1;accent-color:#ff69b4;cursor:pointer}
+#mp.min{width:auto;padding:6px;border-radius:50px}
+#mp.min #mpInfo,#mp.min #mpMin,#mp.min #mpProg,#mp.min #mpCtl,#mp.min #mpVolRow{display:none}
+#mp.min #mpIcon{cursor:pointer;font-size:24px}
+#mp.off #mpCtl button,#mp.off #mpSeek{opacity:.4}
+/* ===== mini oyunlar ===== */
+.info{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#9966aa;margin:6px 0 10px;gap:10px;flex-wrap:wrap}
+.info b{color:#ff69b4}
+.bar{height:8px;background:#2a0a44;border-radius:6px;overflow:hidden;margin:0 0 10px}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff69b4,#ff1493);box-shadow:0 0 10px #ff69b4;transition:width .3s}
+.overlay{position:absolute;inset:0;background:rgba(13,0,32,.9);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;z-index:20;border-radius:14px;padding:20px;text-align:center}
+.overlay.hide{display:none}
+.overlay .big{font-size:56px}
+.overlay h3{font-size:22px;color:#ff69b4;text-shadow:0 0 12px #ff69b4}
+
+/* ===== 1) BALON ===== */
+#bArea{position:relative;width:100%;height:450px;overflow:hidden;border:2px solid #6633aa;border-radius:14px;
+  background:linear-gradient(180deg,#1a0038 0%,#2a0055 100%);cursor:crosshair;user-select:none}
+.balloon{position:absolute;bottom:0;width:64px;height:78px;border-radius:50% 50% 50% 50%/58% 58% 42% 42%;
+  cursor:pointer;will-change:transform;z-index:2;box-shadow:inset -8px -10px 16px rgba(0,0,0,.25),0 0 14px rgba(255,105,180,.35)}
+.balloon::before{content:'';position:absolute;top:12px;left:14px;width:14px;height:22px;border-radius:50%;
+  background:rgba(255,255,255,.45);transform:rotate(25deg)}
+.balloon::after{content:'';position:absolute;left:50%;bottom:-34px;width:2px;height:34px;background:rgba(255,200,230,.55);transform:translateX(-50%)}
+.balloon .bh{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;padding-bottom:6px;pointer-events:none}
+.balloon.gold{width:78px;height:94px;box-shadow:inset -8px -10px 16px rgba(0,0,0,.2),0 0 26px #ffd700;animation:gl 1s ease-in-out infinite}
+.balloon.gold .bh{font-size:30px}
+@keyframes gl{50%{filter:brightness(1.35)}}
+.balloon.pop{animation:popA .25s forwards;pointer-events:none}
+@keyframes popA{to{transform:var(--t) scale(1.7);opacity:0}}
+.plus{position:absolute;font-size:18px;font-weight:bold;color:#ffb6d9;z-index:5;pointer-events:none;animation:plusA 1s forwards;white-space:nowrap}
+@keyframes plusA{to{transform:translateY(-50px);opacity:0}}
+.milestone{position:absolute;left:0;right:0;top:38%;text-align:center;font-size:30px;font-weight:bold;color:#ffd9ec;
+  text-shadow:0 0 20px #ff69b4;z-index:15;pointer-events:none;animation:ms 2.4s forwards}
+@keyframes ms{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+#reasonBox{min-height:64px;margin-top:10px;display:flex;align-items:center;justify-content:center;
+  background:#1a0035;border:2px dashed #6633aa;border-radius:14px;padding:10px 18px;font-size:17px;
+  color:#ffddee;font-style:italic}
+#reasonBox.show{animation:rb .5s}
+@keyframes rb{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+#reasonLog{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px;max-height:120px;overflow-y:auto;padding:4px}
+.chip{background:#2d0060;border:1px solid #8844cc;color:#ffccee;font-size:11px;padding:4px 10px;border-radius:14px}
+
+/* ===== 2) KAZI KAZAN ===== */
+#scRow{display:flex;justify-content:center;margin:10px 0 6px}
+.scard{position:relative;width:340px;height:210px;border-radius:16px;overflow:hidden;border:2px solid #ff69b4;
+  box-shadow:0 0 30px #ff69b450;background:linear-gradient(135deg,#3d0070,#25004a)}
+.smsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:20px;font-size:21px;line-height:1.5;color:#ffeaf5;font-weight:600}
+.scard canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none;transition:opacity .7s}
+
+/* ===== 3) YAKALA ===== */
+#gWrap{position:relative;width:760px;max-width:100%;margin:0 auto}
+#gc{display:block;width:100%;border:2px solid #6633aa;border-radius:14px;
+  background:linear-gradient(180deg,#1a0038 0%,#30005f 100%);cursor:none;touch-action:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;color:#cc99cc;margin-top:8px}
+
+#sB,#sK,#sC{max-width:900px}
+
+/* ===== mobil uyum ===== */
+html{-webkit-text-size-adjust:100%}
+body{min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent}
+.btn,.wt,.card,.abtn,.charopt{touch-action:manipulation}
+.balloon{touch-action:none}
+.inp{font-size:16px}
+#bArea{height:min(450px,56vh)}
+.scard{width:min(340px,84vw);height:auto;aspect-ratio:340/210}
+.arrows{display:none}
+@media (pointer:coarse){.arrows{display:grid}}
+@media (max-width:700px){
+  #gWrap{width:420px}
+  #mp{top:6px;right:6px}
+}
+@media (max-width:600px){
+  body{padding:6px}
+  .screen{padding:8px;gap:10px}
+  .panel{padding:14px 12px;border-radius:16px}
+  h1{font-size:22px}h2{font-size:17px}
+  p{font-size:13px}
+  #letter{padding:22px 18px}
+  #lText{font-size:14px;line-height:1.8}
+  .charopt{padding:10px 12px;min-width:72px}
+  .wt{padding:9px 13px;font-size:15px}
+  .info{font-size:12px}
+  .smsg{font-size:18px}
+  #reasonBox{font-size:15px;padding:8px 12px}
+  .btn{padding:10px 20px}
+}
+</style>
+</head>
+<body>
+<canvas id="fwc"></canvas>
+<div id="toast"></div>
+<div id="mp" class="off">
+  <div id="mpHead">
+    <span id="mpIcon" onclick="mpMin(false)">🎵</span>
+    <div id="mpInfo"><div id="mpTitle">Müzik eklenmedi</div><div id="mpArtist"></div></div>
+    <button id="mpMin" title="Küçült" onclick="mpMin(true)">➖</button>
+  </div>
+  <div id="mpProg"><span id="mpCur">0:00</span><input type="range" id="mpSeek" min="0" max="1000" value="0" oninput="mpSeekTo(this.value)"><span id="mpDur">0:00</span></div>
+  <div id="mpCtl">
+    <button id="mpPrev" title="Önceki şarkı" onclick="mpStep(-1)">⏮</button>
+    <button id="mpPlay" title="Oynat / Duraklat" onclick="mpToggle()">▶</button>
+    <button id="mpNext" title="Sonraki şarkı" onclick="mpStep(1)">⏭</button>
+  </div>
+  <div id="mpVolRow"><button id="mpMute" title="Sesi kapat / aç" onclick="mpMuteToggle()">🔊</button><input type="range" id="mpVol" min="0" max="100" value="50" title="Ses" oninput="mpVolume(this.value)"></div>
+</div>
+
+<!-- ===== START ===== -->
+<div class="screen on" id="s0">
+  <div class="panel" style="max-width:460px">
+    <span style="font-size:50px">💌</span>
+    <h1>Kalbin Kapısı</h1>
+    <p style="margin-bottom:16px">6 bölümlük bulmaca yolculuğu.<br>Sonunda sana özel bir mektup seni bekliyor...</p>
+    <input class="inp" id="nameInp" placeholder="Sevgilinin adını yaz 💕" style="margin-bottom:14px">
+    <p style="margin-bottom:8px;font-size:13px">Karakterini seç:</p>
+    <div class="charopts">
+      <div class="charopt sel" id="co0" onclick="selChar('🧑','co0')">🧑<br><small style="font-size:11px;color:#cc99cc">Erkek</small></div>
+      <div class="charopt" id="co1" onclick="selChar('👩','co1')">👩<br><small style="font-size:11px;color:#cc99cc">Kız</small></div>
+      <div class="charopt" id="co2" onclick="selChar('🐱','co2')">🐱<br><small style="font-size:11px;color:#cc99cc">Kedi</small></div>
+      <div class="charopt" id="co3" onclick="selChar('🐻','co3')">🐻<br><small style="font-size:11px;color:#cc99cc">Ayı</small></div>
+    </div>
+    <br>
+    <button class="btn" onclick="startGame()">💌 Yolculuğa Başla</button>
+  </div>
+</div>
+
+<!-- ===== CHAPTER 1: KART EŞLEME ===== -->
+<div class="screen" id="s1">
+  <div class="pdots"><div class="pdot a"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div></div>
+  <div class="panel">
+    <div class="badge">BÖLÜM 1 / 6 — HAFIZA</div>
+    <h2>🃏 Kart Eşleme</h2>
+    <div id="mjMsg" style="font-size:13px;color:#aa88cc;margin:4px 0">Kartlara tıkla, aynı olan çiftleri bul!</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:#9966aa;margin:6px 0">
+      <span id="mjRound">Tur 1 / 5</span>
+      <span id="mjMoves">Hamle: 0</span>
+      <span id="mjPairs">Kalan: 6 çift</span>
+    </div>
+    <div id="mjGrid"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:6px">
+      <button class="btn ghost" style="font-size:12px;padding:8px 18px" onclick="mjShuffle()">🔀 Karıştır</button>
+      <button class="btn ghost" style="font-size:12px;padding:8px 18px" onclick="mjHint()">💡 İpucu</button>
+    </div>
+    <div style="margin-top:8px"><button class="btn ghost" style="font-size:12px;padding:7px 16px;opacity:.8" onclick="skipChapter(1)">⏭️ Bu bölümü geç</button></div>
+  </div>
+</div>
+
+<!-- ===== CHAPTER 2: WORD PUZZLE ===== -->
+<div class="screen" id="s2">
+  <div class="pdots"><div class="pdot d"></div><div class="pdot a"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div></div>
+  <div class="panel">
+    <div class="badge">BÖLÜM 2 / 6 — SÖZCÜK</div>
+    <h2>🔤 Sözcük Bulmacası</h2>
+    <div id="wpCnt" style="font-size:13px;color:#9966aa;margin-bottom:6px">Cümle 1 / 20</div>
+    <div id="sentArea"></div>
+    <div id="wordBank"></div>
+    <div id="wstat" style="font-size:13px;min-height:18px;margin:4px 0;color:#ff8888"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+      <button class="btn ghost" onclick="clearSent()">🔄 Temizle</button>
+      <button class="btn" onclick="checkSent()">✅ Kontrol</button>
+    </div>
+    <div style="margin-top:8px"><button class="btn ghost" style="font-size:12px;padding:7px 16px;opacity:.8" onclick="skipChapter(2)">⏭️ Bu bölümü geç</button></div>
+  </div>
+</div>
+
+<!-- ===== CHAPTER 3: MAZE ===== -->
+<div class="screen" id="s3">
+  <div class="pdots"><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot a"></div><div class="pdot"></div><div class="pdot"></div></div>
+  <div class="panel">
+    <div class="badge">BÖLÜM 4 / 6 — LABİRENT</div>
+    <h2>🗺️ Kalp Labirenti</h2>
+    <p id="mzDesc" style="margin-bottom:10px">Karakterini ❤️'e ulaştır! Yolda kalpleri topla.<br><small>⌨️ Ok tuşları / WASD &nbsp;•&nbsp; 📱 parmağını sürükle ya da butonlar</small></p>
+    <div style="overflow:auto;display:flex;flex-direction:column;align-items:center">
+      <canvas id="mazeCanvas"></canvas>
+      <div style="font-size:13px;color:#aa88cc;margin-top:6px">Seviye <b id="mzLvl">1</b> / 20 &nbsp;•&nbsp; 💗 Toplanan: <b id="mhCnt">0</b></div>
+      <div class="arrows" style="margin-top:8px">
+        <button class="abtn" style="grid-area:u" onclick="mp('u')">⬆️</button>
+        <button class="abtn" style="grid-area:l" onclick="mp('l')">⬅️</button>
+        <button class="abtn" style="grid-area:r" onclick="mp('r')">➡️</button>
+        <button class="abtn" style="grid-area:d" onclick="mp('d')">⬇️</button>
+      </div>
+      <div style="margin-top:8px"><button class="btn ghost" style="font-size:12px;padding:7px 16px;opacity:.8" onclick="skipChapter(4)">⏭️ Bu bölümü geç</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1) BALON PATLATMA ============ -->
+<div class="screen" id="sB">
+  <div class="pdots"><div class="pdot d"></div><div class="pdot d"></div><div class="pdot a"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div></div>
+  <div class="panel">
+    <div class="badge">BÖLÜM 3 / 6 — BALON</div>
+    <h2>🎈 Seni Neden Seviyorum</h2>
+    <p>Balonlara tıkla! Her balonun içinde bir sebep saklı. ⭐ Altın balon 3 sebep birden verir.</p>
+    <div class="info"><span>Patlatılan: <b id="bCnt">0</b> / <span id="bGoal">100</span></span><span>🖱️ Fare ile tıkla</span></div>
+    <div class="bar"><i id="bBar"></i></div>
+    <div id="bArea">
+      <div class="overlay hide" id="bOver">
+        <div class="big">💞</div><h3>100 sebep tamam!</h3>
+        <p style="max-width:440px">Ve hâlâ daha bitmedi... Seni sevmek için yüzlerce sebebim daha var. 💌</p>
+        <div><button class="btn" onclick="goToCh3()">Devam ➡️</button>
+        <button class="btn ghost" onclick="startBalloons()">🔄 Tekrar</button></div>
+      </div>
+    </div>
+    <div id="reasonBox">Bir balon patlat... 🎈</div>
+    <div id="reasonLog"></div>
+    <div style="margin-top:8px"><button class="btn ghost" style="font-size:12px;padding:7px 16px;opacity:.8" onclick="skipChapter(3)">⏭️ Bu bölümü geç</button></div>
+  </div>
+</div>
+
+<!-- ============ 2) KAZI KAZAN ============ -->
+<div class="screen" id="sK">
+  <div class="pdots"><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot a"></div><div class="pdot"></div></div>
+  <div class="panel">
+    <div class="badge">BÖLÜM 5 / 6 — KAZI KAZAN</div>
+    <h2>🎟️ Kazı Kazan</h2>
+    <p>Fare tuşuna basılı tutup kartın üstünde gezdir, gümüş kaplamayı kazı!</p>
+    <div class="info"><span>Kazınan kart: <b id="scCnt">0</b> / <span id="scGoal">100</span></span><span>Sonraki kart için <b>Enter</b> / <b>Boşluk</b></span></div>
+    <div class="bar"><i id="scBar"></i></div>
+    <div style="position:relative;min-height:250px">
+      <div id="scRow"></div>
+      <div style="text-align:center;min-height:56px">
+        <button class="btn" id="scNext" style="display:none" onclick="nextScratch()">➡️ Sonraki kart</button>
+      </div>
+      <div class="overlay hide" id="scOver">
+        <div class="big">💌</div><h3>100 kartın hepsini kazıdın!</h3>
+        <p>Umarım sürprizleri beğenmişsindir. 🌹</p>
+        <div><button class="btn" onclick="goCatch()">Devam ➡️</button>
+        <button class="btn ghost" onclick="startScratch()">🔄 Baştan</button></div>
+      </div>
+    </div>
+    <div style="margin-top:8px"><button class="btn ghost" style="font-size:12px;padding:7px 16px;opacity:.8" onclick="skipChapter(5)">⏭️ Bu bölümü geç</button></div>
+  </div>
+</div>
+
+<!-- ============ 3) KALP YAKALA ============ -->
+<div class="screen" id="sC">
+  <div class="pdots"><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot a"></div></div>
+  <div class="panel">
+    <div class="badge">BÖLÜM 6 / 6 — YAKALA</div>
+    <h2>🧺 Kalp Yakala</h2>
+    <p>Sepeti fareyle (ya da ← → / A D tuşlarıyla) hareket ettir. 100 puana ulaş!</p>
+    <div class="info">
+      <span>Puan: <b id="gScore">0</b> / <span id="gGoal">100</span></span>
+      <span>Seviye: <b id="gLevel">1</b> / 5</span>
+      <span>Can: <span id="gLives">❤️❤️❤️</span></span>
+    </div>
+    <div id="gWrap">
+      <canvas id="gc" width="760" height="480"></canvas>
+      <div class="overlay" id="gStart">
+        <div class="big">🧺</div><h3>Hazır mısın?</h3>
+        <p style="max-width:460px">💗 +1 &nbsp; 💛 +5 &nbsp; 💔 −1 puan &nbsp; 💣 −1 can<br>⏳ yavaşlat &nbsp; 🧲 kalpleri çek &nbsp; 🛡️ bombayı engelle</p>
+        <button class="btn" onclick="startCatch()">▶ Başla</button>
+      </div>
+      <div class="overlay hide" id="gWin">
+        <div class="big">🎉</div><h3>100 puan! Kazandın!</h3>
+        <p>Kalbimi de yakaladın zaten. 💗</p>
+        <div><button class="btn" onclick="showFinal()">Devam ➡️</button>
+        <button class="btn ghost" onclick="startCatch()">🔄 Tekrar</button></div>
+      </div>
+      <div class="overlay hide" id="gLose">
+        <div class="big">💥</div><h3>Canların bitti!</h3>
+        <p id="gLoseTxt">Tekrar dene, bu sefer bombalardan kaç. 💣</p>
+        <div><button class="btn" onclick="startCatch()">🔄 Tekrar dene</button>
+        <button class="btn ghost" onclick="showFinal()">⏭️ Bölümü geç</button></div>
+      </div>
+    </div>
+    <div class="legend"><span>💗 +1</span><span>💛 +5</span><span>💔 −1 puan</span><span>💣 −1 can</span><span>⏳ yavaşlatır</span><span>🧲 çeker</span><span>🛡️ kalkan</span></div>
+    <div style="margin-top:8px"><button class="btn ghost" style="font-size:12px;padding:7px 16px;opacity:.8" onclick="skipChapter(6)">⏭️ Bu bölümü geç</button></div>
+  </div>
+</div>
+
+
+<!-- ===== FINAL ===== -->
+<div class="screen" id="sf">
+  <div class="pdots"><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div><div class="pdot d"></div></div>
+  <div id="letter">
+    <span class="seal">💌</span>
+    <div id="lTitle">Sana Özel Mektup</div>
+    <div id="lText"></div>
+    <div id="quotes"></div>
+    <br>
+    <button class="btn" onclick="restartAll()">🔄 Baştan Oyna</button>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// GLOBALS
+// ================================================================
+let loveName='Sevgilim', playerChar='🧑', quoteTicker=null;
+
+// ================================================================
+// UTILS
+// ================================================================
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+function toast(msg,dur=1600){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),dur)}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b}
+
+// Floating hearts BG
+const FHE=['💕','💗','💖','❤️','🌸','✨','💫','🌹'];
+setInterval(()=>{const e=document.createElement('div');e.className='fh';e.textContent=FHE[0|Math.random()*FHE.length];const s=12+Math.random()*16;e.style.cssText=`font-size:${s}px;left:${Math.random()*100}vw;bottom:-30px;opacity:.4;animation-duration:${5+Math.random()*5}s`;document.body.appendChild(e);setTimeout(()=>e.remove(),10500)},750);
+
+// ================================================================
+// START
+// ================================================================
+function selChar(ch,id){playerChar=ch;document.querySelectorAll('.charopt').forEach(e=>e.classList.remove('sel'));document.getElementById(id).classList.add('sel')}
+function startGame(){const v=document.getElementById('nameInp').value.trim();if(v)loveName=v;clearInterval(quoteTicker);showScreen('s1');initMJ(1);mpStart()}
+function restartAll(){leaveMini();clearInterval(quoteTicker);showScreen('s0')}
+
+// ================================================================
+// CHAPTER 1 — KART EŞLEME (çevrilebilir kartlar, 5 tur)
+// ================================================================
+const MJ_EMOJI=["emoji/10241-milkandmochalove.gif", "emoji/105474-whitebunnykisses.png", "emoji/10656-pinktext-bubble.gif", "emoji/11582-dvahearts.png", "emoji/11596-milkandmochalove4.gif", "emoji/1199-diamond1.gif", "emoji/13005-vday-heart.png", "emoji/1343-cakecreamy.png", "emoji/140488-whitebunnyangry.png", "emoji/1503-sockss.png", "emoji/16644-cloakndaggerheart.png", "emoji/17739-xoxo.gif", "emoji/183759-hearts.png", "emoji/18421-heart.gif", "emoji/19122-sanrio-bandaid.png", "emoji/219791-pinkflowerheart.png", "emoji/22144-kissssssssssssssssssssssssssssss.gif", "emoji/22177-white-butterfly.gif", "emoji/23407-lightpinkheartx.gif", "emoji/257936-whitebunnycrying.png", "emoji/262536-flower.png", "emoji/2630-cutecat.png", "emoji/2771-cherry-blossom1.png", "emoji/283496-heart-ids.png", "emoji/3113-hellokitty-flushed.png", "emoji/3493-diamond2.gif", "emoji/35432-youareloved.gif", "emoji/3562-nikkilove.gif", "emoji/359921-whitebunnyhappy.png", "emoji/36419-inlove.png", "emoji/3712-zerotwo-heartlove.png", "emoji/37395-flowers.gif", "emoji/38903-fingerheart.png", "emoji/39757-bae.png", "emoji/4051-pink-stars.gif", "emoji/40651-milkandmochalove7.gif", "emoji/42372-cathearts.gif", "emoji/43237-trustingheart.png", "emoji/440769-whitebunnyangel.png", "emoji/441427-whitebunnyholdheart.png", "emoji/44401-melody-heart.gif", "emoji/44485-hypnotizingheart.gif", "emoji/4544-whitewings.gif", "emoji/461939-whitebunnywave.png", "emoji/46554-pinkbunnyhellokitty.png", "emoji/4778-giveme.png", "emoji/4940-hellokitty-hungry.png", "emoji/4962-bluewings.gif", "emoji/4962-diamond3.gif", "emoji/500819-pinkheart.gif", "emoji/50471-sakura-flower.png", "emoji/511187-whitebunnyawe.png", "emoji/53140-kuromi-sparkles.png", "emoji/5326-baku-jump.png", "emoji/535971-whitebunnyfairy.png", "emoji/54170-hk-ping.png", "emoji/54177-giftrose.png", "emoji/5616-hellokitty-sleep.png", "emoji/56273-hk-boost-badge.png", "emoji/567612-whitebunnyrockstar.png", "emoji/5819-prettyprincess.png", "emoji/58253-milkandmochalove5.gif", "emoji/595671-whitebunnyschool.png", "emoji/5998-loveyou.gif", "emoji/6015-redwings.gif", "emoji/6141-cakebow.png", "emoji/6238-korilakkuma.png", "emoji/62509-hellokitty-wink.png", "emoji/62893-hk-stare-glare.png", "emoji/644902-whitebunnyheart.png", "emoji/6689-strawberry1.png", "emoji/678260-heart-ids.png", "emoji/6994-cakeheartpinkystrawberry.png", "emoji/70080-hellokittysick.png", "emoji/70271-mocha-kiss.png", "emoji/7039-hellokitty-stressed.png", "emoji/7219-pink-ribbon.png", "emoji/74910-milkandmochalove3.gif", "emoji/769624-pinkheartscluster.gif", "emoji/7820-hellokitty-sad.png", "emoji/7857-yellowwings.gif", "emoji/79841-kuromi-cupcake.png", "emoji/80871-hellokittyquestionmark.png", "emoji/81017-kuromi-jump.png", "emoji/81173-goldflowerheart.png", "emoji/8149-givelove.png", "emoji/821061-heart-ids.png", "emoji/8633-rosewings.gif", "emoji/870202-flower4.png", "emoji/870714-whitebunnyexcited.png", "emoji/874473-heart-ids.png", "emoji/87888-heartpop.gif", "emoji/8844-hk-angel.png", "emoji/89313-redflowers.gif", "emoji/8936-strawberryfilledbiscuits.png", "emoji/89774-baku-bow.png", "emoji/9117-creamcakewhipped.png", "emoji/92989-kirby-heart.png", "emoji/9453-hellokitty-shock.png", "emoji/963306-whitebunnyclover.png", "emoji/96336-pink-butterfly.gif", "emoji/9636-hellokitty-hearteyes.png", "emoji/97797-kuromi-cellphone.png", "emoji/98036-heart-letter.png", "emoji/9840-kuma-cherry.png", "emoji/986361-whitebunnyspeechbubble.png", "emoji/98755-pinkflyingheart.gif", "emoji/9961-heartbiscuitscreamy.png"];
+// tur: [çift sayısı, sütun, satır]
+const MJ_ROUNDS=[[20,8,5],[20,8,5],[20,8,5]];
+const MJ_GAP=12;
+let mjToken=0,wpToken=0,mzToken=0;
+let mjCards=[],mjFirst=null,mjLock=false,mjLeft=0,mjRound=0,mjMoves=0,mjCols=4,mjRows=3;
+
+// Tüm emojiler sırayla dağıtılır: bir emoji, deste bitmeden tekrar gelmez
+let mjDeck=[];
+function mjDraw(n){
+  let out=mjDeck.splice(0,n);
+  if(out.length<n){
+    mjDeck=shuffle(MJ_EMOJI.filter(x=>!out.includes(x)));
+    out=out.concat(mjDeck.splice(0,n-out.length));
+  }
+  return out;
+}
+
+function sizeMJ(){
+  const narrow=innerWidth<700;
+  if(narrow){mjCols=5;mjRows=Math.ceil((mjCards.length||40)/5)}
+  else{const r=MJ_ROUNDS[Math.max(0,mjRound-1)];mjCols=r[1];mjRows=r[2]}
+  const gap=narrow?6:MJ_GAP;
+  const availW=narrow?innerWidth-50:Math.min(innerWidth-110,900);
+  const availH=narrow?innerHeight-300:innerHeight-330;
+  const cs=Math.floor(Math.min(
+    (availW-(mjCols-1)*gap)/mjCols,
+    (availH-(mjRows-1)*gap)/mjRows,
+    100));
+  const g=document.getElementById('mjGrid');
+  g.style.gap=gap+'px';
+  g.style.setProperty('--cs',Math.max(cs,narrow?28:44)+'px');
+  g.style.setProperty('--cols',mjCols);
+}
+window.addEventListener('resize',()=>{if(document.getElementById('s1').classList.contains('on'))sizeMJ()});
+
+function initMJ(rnd){
+  mjRound=rnd;mjFirst=null;mjLock=false;mjMoves=0;
+  const [pairs,cols,rows]=MJ_ROUNDS[rnd-1];
+  mjLeft=pairs;mjCols=cols;mjRows=rows;
+  document.getElementById('mjRound').textContent=`Tur ${rnd} / ${MJ_ROUNDS.length}`;
+  document.getElementById('mjMoves').textContent='Hamle: 0';
+  document.getElementById('mjPairs').textContent=`Kalan: ${pairs} çift`;
+  document.getElementById('mjMsg').textContent='Kartlara tıkla, aynı olan çiftleri bul!';
+  const syms=mjDraw(pairs);
+  const all=shuffle([...syms,...syms]);
+  const g=document.getElementById('mjGrid');
+  g.innerHTML='';
+  mjCards=all.map((sym,i)=>{
+    const el=document.createElement('div');
+    el.className='card';
+    el.innerHTML=`<div class="ci"><div class="face back">💌</div><div class="face front"><img src="${sym}" alt="" draggable="false"></div></div>`;
+    el.onclick=()=>mjFlip(c);
+    const c={el,sym,matched:false};
+    g.appendChild(el);
+    return c;
+  });
+  sizeMJ();
+}
+
+function mjFlip(c){
+  if(mjLock||c.matched||c===mjFirst)return;
+  mjCards.forEach(x=>x.el.classList.remove('hint'));
+  c.el.classList.add('flip');
+  if(!mjFirst){mjFirst=c;return}
+  mjMoves++;
+  document.getElementById('mjMoves').textContent=`Hamle: ${mjMoves}`;
+  const a=mjFirst;mjFirst=null;
+  if(a.sym===c.sym){
+    a.matched=c.matched=true;
+    setTimeout(()=>{a.el.classList.add('matched');c.el.classList.add('matched')},350);
+    setTimeout(()=>{a.el.classList.add('gone');c.el.classList.add('gone')},900);
+    mjLeft--;
+    document.getElementById('mjPairs').textContent=`Kalan: ${mjLeft} çift`;
+    toast('💕 Eşleşti!',900);
+    if(mjLeft===0){
+      mjLock=true;
+      document.getElementById('mjMsg').textContent=`✨ Tur ${mjRound} tamamlandı!`;
+      const tk=mjToken;
+      setTimeout(()=>{if(tk!==mjToken)return;if(mjRound<MJ_ROUNDS.length)initMJ(mjRound+1);else goToCh2()},1500);
+    }
+  } else {
+    mjLock=true;
+    setTimeout(()=>{a.el.classList.remove('flip');c.el.classList.remove('flip');mjLock=false},850);
+  }
+}
+
+// Kapalı kartların yerini karıştır
+function mjShuffle(){
+  if(mjLock)return;
+  const closed=mjCards.filter(c=>!c.matched&&c!==mjFirst);
+  if(closed.length<2)return;
+  const syms=shuffle(closed.map(c=>c.sym));
+  closed.forEach((c,i)=>{c.sym=syms[i];c.el.querySelector('.front img').src=syms[i]});
+  toast('🔀 Karıştırıldı!',1000);
+}
+
+// Bir çifti kısa süre işaretle
+function mjHint(){
+  if(mjLock)return;
+  mjCards.forEach(x=>x.el.classList.remove('hint'));
+  const closed=mjCards.filter(c=>!c.matched);
+  const pick=mjFirst?closed.find(c=>c!==mjFirst&&c.sym===mjFirst.sym):null;
+  if(pick){pick.el.classList.add('hint')}
+  else{
+    for(let i=0;i<closed.length;i++)for(let j=i+1;j<closed.length;j++)
+      if(closed[i].sym===closed[j].sym){closed[i].el.classList.add('hint');closed[j].el.classList.add('hint');i=j=closed.length;}
+  }
+  toast('💡 İpucu verildi!',1200);
+  setTimeout(()=>mjCards.forEach(x=>x.el.classList.remove('hint')),1800);
+}
+
+// ================================================================
+// CHAPTER 2 — WORD PUZZLE (20 sentences)
+// ================================================================
+const PUZZLES=[
+  ['Seninle','her','şey','daha','güzel'],
+  ['Özür','dilerim,','seni','çok','seviyorum'],
+  ['Barışalım','mı,','seni','kaybetmek','istemiyorum'],
+  ['Sen','benim','için','çok','özelsin'],
+  ['Seninle','olmak','istiyorum','her','zaman'],
+  ['Seni','düşünmeden','geçen','bir','gün','yok'],
+  ['Aşkım,','sen','benim','her','şeyimsin'],
+  ['Yanında','olmak','istiyorum','hep'],
+  ['Seni','çok','özledim,','biliyor','musun?'],
+  ['Birlikte','güzel','anlar','yaşayalım'],
+  ['Sen','olmadan','kendimi','eksik','hissediyorum'],
+  ['Yüreğimin','en','güzel','köşesi','sensin'],
+  ['Seninle','güldüm,','ağladım','ve','büyüdüm'],
+  ['Kalbimde','sadece','sen','varsın'],
+  ['Sana','kavuşmak','için','her','şeyi','yaparım'],
+  ['Seni','sevmek','çok','güzel','bir','şey'],
+  ['Hataları','geride','bırakıp','devam','edelim'],
+  ['Birbirimize','iyi','bakalım','artık'],
+  ['Senin','sesin','kalbimin','müziğidir'],
+  ['Seni','her','gün','biraz','daha','çok','seviyorum'],
+];
+let wpIdx=0,wpSent=[],wpUsed=new Set();
+
+function skipChapter(n){
+  if(n===1){mjToken++;mjLock=true;goToCh2()}
+  else if(n===2){wpToken++;goBalloon()}
+  else if(n===3){goToCh3()}
+  else if(n===4){mzToken++;mzBusy=true;goScratch()}
+  else if(n===5){goCatch()}
+  else{showFinal()}
+}
+function goToCh2(){leaveMini();mjToken++;wpIdx=0;showScreen('s2');loadPuz()}
+function loadPuz(){
+  wpSent=[];wpUsed=new Set();
+  document.getElementById('wpCnt').textContent=`Cümle ${wpIdx+1} / ${PUZZLES.length}`;
+  document.getElementById('wstat').textContent='';
+  document.getElementById('sentArea').classList.remove('ok');
+  const words=shuffle([...PUZZLES[wpIdx]]);
+  const wb=document.getElementById('wordBank');
+  wb.innerHTML='';
+  words.forEach((w,i)=>{
+    const el=document.createElement('div');
+    el.className='wt';el.textContent=w;el.dataset.i=i;el.dataset.w=w;
+    el.onclick=()=>addW(el,i,w);wb.appendChild(el);
+  });
+  renderSent();
+}
+function renderSent(){
+  const a=document.getElementById('sentArea');a.innerHTML='';
+  if(!wpSent.length){a.innerHTML='<span style="color:#553377;font-size:13px">Kelimelere tıkla, sırala...</span>';return}
+  wpSent.forEach((item,pos)=>{
+    const el=document.createElement('div');el.className='wt ins';el.textContent=item.w;
+    el.onclick=()=>remW(pos);a.appendChild(el);
+  });
+}
+function addW(el,i,w){if(wpUsed.has(i))return;wpUsed.add(i);el.classList.add('used');wpSent.push({w,i});renderSent()}
+function remW(pos){const it=wpSent[pos];wpUsed.delete(it.i);wpSent.splice(pos,1);document.querySelectorAll('#wordBank .wt').forEach(e=>{if(+e.dataset.i===it.i)e.classList.remove('used')});renderSent()}
+function clearSent(){wpSent=[];wpUsed=new Set();document.querySelectorAll('#wordBank .wt').forEach(e=>e.classList.remove('used'));renderSent();document.getElementById('wstat').textContent='';document.getElementById('sentArea').classList.remove('ok')}
+function checkSent(){
+  const ans=PUZZLES[wpIdx];
+  const el=document.getElementById('wstat');
+  if(wpSent.length!==ans.length){el.textContent='Tüm kelimeleri kullan!';el.style.color='#ff8888';return}
+  if(wpSent.every((it,i)=>it.w===ans[i])){
+    document.getElementById('sentArea').classList.add('ok');
+    el.textContent=`✨ "${ans.join(' ')}"`;el.style.color='#ff69b4';
+    toast('Harika! 💕',1100);
+    const tk=wpToken;
+    setTimeout(()=>{if(tk!==wpToken)return;wpIdx++;if(wpIdx>=PUZZLES.length)goBalloon();else loadPuz()},1300);
+  } else {
+    el.textContent='Sıralama yanlış, tekrar dene!';el.style.color='#ff8888';
+    setTimeout(()=>{clearSent();el.textContent=''},1000);
+  }
+}
+
+// ================================================================
+// CHAPTER 3 — MAZE (15×15 recursive backtracker)
+// ================================================================
+const MZ_LEVELS=20;
+let MROWS=15,MCOLS=15,MCELL=21,MZW=0,MZH=0;
+// seviye 1 = 15x15, seviye 20 = 30x30
+function mzSizeFor(l){return innerWidth<700?12+Math.round((l-1)*10/(MZ_LEVELS-1)):15+Math.round((l-1)*15/(MZ_LEVELS-1))}
+function sizeMaze(){
+  const touch=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  const byH=(innerHeight-(touch?470:340))/MROWS;
+  const byW=(innerWidth<700?innerWidth-56:Math.min(innerWidth-120,860))/MCOLS;
+  MCELL=Math.max(10,Math.floor(Math.min(byH,byW,60)));
+  MZW=MCOLS*MCELL;MZH=MROWS*MCELL;
+}
+let mzLevel=1,mzBusy=false;
+let mzG=[],mzP={},mzGoal={},mzH=[],mzCol=0,mzCtx;
+
+function goToCh3(){leaveMini();wpToken++;mzToken++;mzCol=0;mzLevel=1;document.getElementById('mhCnt').textContent='0';showScreen('s3');genMaze();drawMaze()}
+function genMaze(){
+  MROWS=MCOLS=mzSizeFor(mzLevel);mzBusy=false;
+  document.getElementById('mzLvl').textContent=mzLevel;
+  sizeMaze();
+  mzG=Array.from({length:MROWS},()=>Array.from({length:MCOLS},()=>({v:false,w:[true,true,true,true]})));
+  function carve(r,c){
+    mzG[r][c].v=true;
+    const dirs=shuffle([{dr:-1,dc:0,w:0,nw:2},{dr:0,dc:1,w:1,nw:3},{dr:1,dc:0,w:2,nw:0},{dr:0,dc:-1,w:3,nw:1}]);
+    for(const {dr,dc,w,nw} of dirs){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<MROWS&&nc>=0&&nc<MCOLS&&!mzG[nr][nc].v){mzG[r][c].w[w]=false;mzG[nr][nc].w[nw]=false;carve(nr,nc)}}
+  }
+  carve(0,0);
+  mzP={r:0,c:0};mzGoal={r:MROWS-1,c:MCOLS-1};
+  mzH=[];
+  const pos=[];
+  for(let r=0;r<MROWS;r++)for(let c=0;c<MCOLS;c++)if((r!==0||c!==0)&&(r!==MROWS-1||c!==MCOLS-1))pos.push({r,c});
+  shuffle(pos).slice(0,8+mzLevel).forEach(p=>mzH.push({...p,got:false}));
+  const cv=document.getElementById('mazeCanvas');cv.width=MZW;cv.height=MZH;
+  mzCtx=cv.getContext('2d');
+}
+function drawMaze(){
+  const ctx=mzCtx;
+  ctx.fillStyle='#0a0018';ctx.fillRect(0,0,MZW,MZH);
+  for(let r=0;r<MROWS;r++){
+    for(let c=0;c<MCOLS;c++){
+      const x=c*MCELL,y=r*MCELL,cell=mzG[r][c];
+      ctx.strokeStyle='#8a4dff';ctx.lineWidth=2.5;ctx.lineCap='round';
+      if(cell.w[0]){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+MCELL,y);ctx.stroke()}
+      if(cell.w[1]){ctx.beginPath();ctx.moveTo(x+MCELL,y);ctx.lineTo(x+MCELL,y+MCELL);ctx.stroke()}
+      if(cell.w[2]){ctx.beginPath();ctx.moveTo(x,y+MCELL);ctx.lineTo(x+MCELL,y+MCELL);ctx.stroke()}
+      if(cell.w[3]){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+MCELL);ctx.stroke()}
+    }
+  }
+  ctx.fillStyle='rgba(100,0,200,0.15)';ctx.fillRect(0,0,MCELL,MCELL);
+  ctx.fillStyle='rgba(255,0,100,0.2)';ctx.fillRect(mzGoal.c*MCELL,mzGoal.r*MCELL,MCELL,MCELL);
+  ctx.globalAlpha=1;ctx.fillStyle='#fff';
+  ctx.font=`${Math.max(10,Math.round(MCELL*.72))}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  mzH.forEach(h=>{if(!h.got)ctx.fillText('💗',h.c*MCELL+MCELL/2,h.r*MCELL+MCELL/2)});
+  ctx.fillText('❤️',mzGoal.c*MCELL+MCELL/2,mzGoal.r*MCELL+MCELL/2);
+  ctx.fillText(playerChar,mzP.c*MCELL+MCELL/2,mzP.r*MCELL+MCELL/2);
+}
+function mp(dir){
+  if(mzBusy)return;
+  const{r,c}=mzP,cell=mzG[r][c];
+  let nr=r,nc=c,wi;
+  if(dir==='u'){nr=r-1;wi=0}else if(dir==='r'){nc=c+1;wi=1}else if(dir==='d'){nr=r+1;wi=2}else{nc=c-1;wi=3}
+  if(nr<0||nr>=MROWS||nc<0||nc>=MCOLS||cell.w[wi]){toast('Duvar! 🧱',400);return}
+  mzP={r:nr,c:nc};
+  mzH.forEach(h=>{if(!h.got&&h.r===nr&&h.c===nc){h.got=true;mzCol++;document.getElementById('mhCnt').textContent=mzCol;toast('💗 +1',500)}});
+  drawMaze();
+  if(nr===mzGoal.r&&nc===mzGoal.c){
+    mzBusy=true;const tk=mzToken;
+    if(mzLevel>=MZ_LEVELS)setTimeout(()=>{if(tk===mzToken)goScratch()},600);
+    else{toast(`✨ Seviye ${mzLevel} tamam!`,900);setTimeout(()=>{if(tk!==mzToken)return;mzLevel++;genMaze();drawMaze()},700)}
+  }
+}
+window.addEventListener('resize',()=>{if(document.getElementById('s3').classList.contains('on')&&mzG.length){sizeMaze();const cv=document.getElementById('mazeCanvas');cv.width=MZW;cv.height=MZH;mzCtx=cv.getContext('2d');drawMaze()}});
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('s3').classList.contains('on'))return;
+  const m={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r',W:'u',S:'d',A:'l',D:'r'};
+  if(m[e.key]){e.preventDefault();mp(m[e.key])}
+});
+
+// ================================================================
+// FINAL — LOVE LETTER + ROTATING QUOTES
+// ================================================================
+const LOVE_QUOTES=[
+  '"Gerçek aşk kırılmaz, sadece eğilir."',
+  '"Özür dilemek cesaret ister, affetmek büyüklük."',
+  '"Seninle olan her an hayatımın en güzel anı."',
+  '"Kavgalar geçer, sevgi kalır."',
+  '"İki kalp bir olduğunda yalnızlık biter."',
+  '"Seni seviyorum — bu kadar basit, bu kadar zor."',
+  '"Her gün seninle yeniden aşık oluyorum."',
+  '"Barışmak aşkın en güzel halidir."',
+  '"Birlikte güçlüyüz, ayrı eksik."',
+  '"Sen benim evimsin, hep sana dönmek istiyorum."',
+  '"Aşk; en basit şeylerde saklıdır."',
+  '"Kalpler küser ama sevgi asla unutmaz."',
+  '"En güzel an, seninle geçen her andır."',
+  '"Seni sevmek hayatımın en iyi kararı."',
+  '"Uzak düşsek de kalbimiz hep birlikte."',
+];
+const LETTERS=[
+  `Bazen en güzel şeyler kırılır.
+Ama kırılan her şey onarılamaz değildir.
+
+Seninle geçirdiğim her anı özledim.
+Sesini, gülüşünü, bana bakışını...
+
+Hata yaptıysam — özür dilerim.
+Gerçekten, yürekten.
+
+Seni kaybetmek istemiyorum.
+Çünkü sen benim için çok özelsin.
+
+Herşeyi geride bırakıp barışalım mı? 🌹`,
+  `Kırgınlığın ağırlığını ikimiz de taşıyoruz.
+Ben bu yükü daha fazla taşımak istemiyorum.
+
+Gururumu bir kenara bırakıp söylüyorum:
+Seni çok özledim.
+
+Haklı olmak, seni kaybetmeye değmez.
+Gel, tekrar başlayalım mı? 🌹`,
+  `Sensiz geçen her gün biraz daha sessiz.
+Sesini, kahkahanı, hatta sitemini bile özledim.
+
+Yanlış yaptığım yerler varsa, hepsinin farkındayım.
+Özür dilerim, içtenlikle.
+
+Bir şans daha verir misin bana? 💌`,
+  `Kavgalar geçer, sevgi kalır.
+Ben bunu seninle öğrendim.
+
+İçimdeki öfke dindi,
+geriye sadece sana duyduğum özlem kaldı.
+
+Barışmak istiyorum.
+Elini tutmak istiyorum. 🤝`,
+  `Biliyor musun, en çok neye pişmanım?
+Seni üzdüğüm anlara.
+
+Keşke geri alabilsem.
+Alamıyorsam da, bundan sonrasını daha güzel yaşatmak istiyorum.
+
+Affeder misin beni? 🕊️`,
+  `Her şey karıştığında bile aklımda hep sen vardın.
+Bunu bilmeni istedim.
+
+Gurur, kırgınlık, inat...
+Hiçbiri senin yerini tutmuyor.
+
+Barışalım mı, {ad}? 💗`,
+  `Bazen insan en çok sevdiğini en çok kırar.
+Ben de öyle yaptım.
+
+Ama sevgim hiç eksilmedi, hiç.
+Özür diliyorum, kalbimin en derininden.
+
+Bana bir kapı aralar mısın? 🚪`,
+  `Seninle konuşmadığım her dakika bana uzun geliyor.
+Cümlelerim yarım, günlerim eksik.
+
+Biraz sabret bana,
+bir de ben seni sabırla sevmeyi öğreneyim.
+
+Küsmeyi bırakıp sarılalım mı? 🤗`,
+  `Bu mektubu yazarken içim kıpır kıpır.
+Çünkü sana "özür dilerim" demek istiyorum.
+
+Hem de sadece kelimeyle değil,
+davranışlarımla da göstermek istiyorum.
+
+Bir fırsat verir misin, {ad}? ✨`,
+  `Seni seviyorum.
+Kavgaların, kırgınlıkların ötesinde, hepsinden büyük bir şekilde.
+
+Bazı günler zor olacak, biliyorum.
+Ama seninle zor günler bile güzel.
+
+Hadi, barışalım. 🌸`,
+  `Yıldızlara baktım bu gece.
+Hepsinin içinde senin gülüşün vardı.
+
+Seni kırdığım için üzgünüm.
+Kalbimde senden büyük yer kaplayan hiçbir şey yok.
+
+Bana yine gülümser misin? 🌙`,
+  `Biliyorum, bazen çok inatçı oluyorum.
+Ve biliyorum, bu seni yoruyor.
+
+Ama sevgim o inattan çok daha büyük.
+Özür dilerim, bundan sonra daha dikkatli olacağım.
+
+Barışalım mı? 🧸`,
+  `Sana en çok şunu söylemek istiyorum:
+Sen benim için vazgeçilmezsin.
+
+Hatalarım olabilir, ama sana olan sevgim gerçek.
+Lütfen bana bir şans daha ver.
+
+Seni çok seviyorum. 💖`,
+  `Küslük bize yakışmıyor.
+Biz gülen, paylaşan, birbirine sarılan iki insanız.
+
+Gel bu mesafeyi kapatalım.
+Ben ilk adımı attım, gerisini birlikte yürüyelim. 😊`,
+  `En güzel anılarım hep seninle.
+Onları bir tartışmaya kurban etmek istemiyorum.
+
+Sana söz veriyorum, daha iyi dinleyeceğim,
+daha iyi anlayacağım.
+
+Beni affeder misin? 🌹`,
+  `Şu an yanımda olmanı o kadar çok istiyorum ki...
+Sesin bile yetermiş meğer.
+
+Yaralarımız varsa birlikte saralım.
+Kırıklarımız varsa birlikte onaralım.
+
+Barışalım mı sevgilim? 🩹`,
+  `Dünya büyük, insanlar çok.
+Ama benim kalbim sadece seni seçti.
+
+Seni üzdüysem, affet.
+Sen bana kızgınken bile seni seviyorum.
+
+Elimi tutar mısın, {ad}? 🤍`,
+  `Sana söylemek istediğim çok şey var,
+ama hepsi tek bir cümleye sığıyor:
+
+Seni kaybetmek istemiyorum.
+
+Yanlışlarımı düzeltmek, seni mutlu etmek istiyorum.
+Barışalım mı? 💌`,
+  `Sabah gözümü açtığımda ilk seni düşündüm.
+Kırgınlık geçti, özlem kaldı.
+
+Aramızdaki bu sessizlik bize hiç yakışmıyor.
+Sesini duymak, seni görmek istiyorum.
+
+Gel, her şeyi geride bırakalım. 🌅`,
+  `Bu mektup benden sana bir söz:
+Seni sevmekten asla vazgeçmeyeceğim.
+
+Kırılırsak yeniden onarırız,
+düşersek birlikte kalkarız.
+
+Bu yolda yine yanımda olur musun? 💍`
+];
+let letterTimer=null,lastLetterIdx=-1;
+function pickLetter(){
+  // her seferinde farklı mektup; üst üste aynısı gelmesin
+  let last=lastLetterIdx;
+  if(last<0){try{last=+(localStorage.getItem('kk_lastLetter')||-1)}catch(_){}}
+  let i;do{i=0|Math.random()*LETTERS.length}while(i===last&&LETTERS.length>1);
+  lastLetterIdx=i;
+  try{localStorage.setItem('kk_lastLetter',i)}catch(_){}
+  return LETTERS[i].split('{ad}').join(loveName);
+}
+function showFinal(){
+  leaveMini();clearInterval(quoteTicker);clearInterval(letterTimer);mpFinal();
+  showScreen('sf');
+  document.getElementById('lTitle').textContent=`Sevgili ${loveName}... 💌`;
+  const letter=Array.from(pickLetter()); // emoji'ler bölünmesin
+  const el=document.getElementById('lText');el.textContent='';
+  let i=0;letterTimer=setInterval(()=>{el.textContent+=letter[i++];if(i>=letter.length){clearInterval(letterTimer);startQuotes();fireworks()}},28);
+}
+function startQuotes(){
+  let qi=0;const el=document.getElementById('quotes');
+  el.style.transition='none';el.style.opacity='0';el.textContent=LOVE_QUOTES[qi];
+  setTimeout(()=>{el.style.transition='opacity .7s';el.style.opacity='1'},100);
+  quoteTicker=setInterval(()=>{
+    el.style.opacity='0';
+    setTimeout(()=>{qi=(qi+1)%LOVE_QUOTES.length;el.textContent=LOVE_QUOTES[qi];el.style.opacity='1'},750);
+  },4000);
+}
+function fireworks(){
+  const cv=document.getElementById('fwc');cv.width=innerWidth;cv.height=innerHeight;
+  const ctx=cv.getContext('2d'),pts=[],C=['#ff69b4','#ffd700','#ff1493','#ffb6d9','#fff','#aa44ff'];
+  for(let w=0;w<10;w++)setTimeout(()=>{
+    const cx=Math.random()*cv.width,cy=Math.random()*cv.height*.65;
+    for(let i=0;i<35;i++){const a=(i/35)*Math.PI*2,sp=2+Math.random()*5;pts.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:70,max:70,c:C[0|Math.random()*C.length],sz:2+Math.random()*3})}
+  },w*450);
+  function anim(){ctx.clearRect(0,0,cv.width,cv.height);for(let i=pts.length-1;i>=0;i--){const p=pts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.09;p.life--;if(p.life<=0){pts.splice(i,1);continue}ctx.globalAlpha=p.life/p.max;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;if(pts.length>0)requestAnimationFrame(anim);else ctx.clearRect(0,0,cv.width,cv.height)}
+  anim();
+}
+
+// ================================================================
+// MÜZİK ÇALAR
+// ================================================================
+// Şarkı eklemek için: MP3'ü muzik/ klasörüne koy, aşağıya bir satır yaz:
+//   {t:'Şarkı adı', a:'Sanatçı adı', src:'muzik/dosya.mp3'},
+// Mektup ekranında özel şarkı için satıra final:true ekle.
+const PLAYLIST=[
+  {t:"Bulutlarda", a:"Ati242", src:"muzik/ati242-bulutlarda.mp3"},
+  {t:"Doruklara Sevdalandım ft. BLOK3", a:"Ati242, BLOK3", src:"muzik/ati242-doruklara-sevdalandim.mp3"},
+  {t:"Kadınım ft. Taladro", a:"Ati242, Taladro", src:"muzik/ati242-kadinim.mp3"},
+  {t:"Kap Gözlerini", a:"Ati242, Bedo, Stabil", src:"muzik/ati242-kap-gozlerini.mp3"},
+  {t:"Maraton", a:"Ati242", src:"muzik/ati242-maraton.mp3"},
+  {t:"Sönen Sigaralar", a:"Ati242", src:"muzik/ati242-sonen-sigaralar.mp3"},
+  {t:"Yolu Yok", a:"Ati242", src:"muzik/ati242-yolu-yok.mp3"},
+  {t:"Amatör", a:"Manifest", src:"muzik/manifest-amator.mp3"},
+  {t:"Arıyo", a:"Manifest", src:"muzik/manifest-ariyo.mp3"},
+  {t:"Durma", a:"Manifest", src:"muzik/manifest-durma.mp3"},
+  {t:"KTS", a:"Manifest", src:"muzik/manifest-kts.mp3"},
+  {t:"Manifest", a:"Manifest, Arem Özgüç, Arman Aydın", src:"muzik/manifest-manifest.mp3"},
+  {t:"Rüya", a:"Manifest", src:"muzik/manifest-ruya.mp3"},
+  {t:"Snap", a:"Manifest", src:"muzik/manifest-snap.mp3"},
+  {t:"Yaşanacaksa", a:"Manifest", src:"muzik/manifest-yasanacaksa.mp3"},
+  {t:"Zamansızdık", a:"Manifest", src:"muzik/manifest-zamansizdik.mp3"},
+  {t:"Zehir", a:"Manifest, Pango", src:"muzik/manifest-zehir.mp3"},
+  {t:"Aşığım Gecelere", a:"Zeki Arkun", src:"muzik/zeki-arkun-asigim-gecelere.mp3"},
+  {t:"Hayran", a:"Zeki Arkun", src:"muzik/zeki-arkun-hayran.mp3"},
+  {t:"Hoşuna Gidiyo", a:"Zeki Arkun, Aleyna Tilki", src:"muzik/zeki-arkun-hosuna-gidiyo.mp3"},
+  {t:"ÖPÜCÜK", a:"Zeki Arkun", src:"muzik/zeki-arkun-opucuk.mp3"},
+  {t:"Veda Busesi", a:"Zeki Arkun", src:"muzik/zeki-arkun-veda-busesi.mp3"},
+  {t:"Zilli", a:"Zeki Arkun", src:"muzik/zeki-arkun-zilli.mp3"},
+  {t:"KISKANÇ", a:"Zeki Arkun", src:"muzik/zeki-arkun-kiskanc.mp3"},
+  {t:"YENİ BİRİ", a:"Zeki Arkun, Simge", src:"muzik/zeki-arkun-yeni-biri.mp3"},
+];
+const mpAud=new Audio();mpAud.preload='auto';
+let mpIdx=0,mpWant=true,mpFails=0,mpStarted=false;
+function mpSave(k,v){try{localStorage.setItem('kk_'+k,v)}catch(e){}}
+function mpGet(k,d){try{const v=localStorage.getItem('kk_'+k);return v===null?d:v}catch(e){return d}}
+function mpFmt(s){if(!isFinite(s))return '0:00';s=Math.floor(s);return (s/60|0)+':'+String(s%60).padStart(2,'0')}
+function mpUI(){
+  const has=PLAYLIST.length>0, bad=has&&mpFails>=PLAYLIST.length;
+  const playing=has&&!mpAud.paused&&!mpAud.ended;
+  const el=document.getElementById('mp');
+  el.style.display=has?'':'none';
+  el.classList.toggle('off',!has);el.classList.toggle('playing',playing);
+  document.getElementById('mpPlay').textContent=playing?'⏸':'▶';
+  document.getElementById('mpMute').textContent=(mpAud.muted||mpAud.volume===0)?'🔇':'🔊';
+  document.getElementById('mpTitle').textContent=!has?'Müzik eklenmedi':bad?'Dosya bulunamadı':PLAYLIST[mpIdx].t;
+  document.getElementById('mpArtist').textContent=(!has||bad)?'':(PLAYLIST[mpIdx].a||'');
+}
+function mpLoad(i){
+  if(!PLAYLIST.length)return;
+  mpIdx=(i+PLAYLIST.length)%PLAYLIST.length;
+  mpAud.src=PLAYLIST[mpIdx].src;
+  document.getElementById('mpSeek').value=0;
+  document.getElementById('mpCur').textContent='0:00';document.getElementById('mpDur').textContent='0:00';
+  mpUI();
+}
+function mpPlayNow(){
+  if(!PLAYLIST.length||mpFails>=PLAYLIST.length)return;
+  if(!mpAud.src)mpLoad(mpIdx);
+  const p=mpAud.play();if(p&&p.catch)p.catch(()=>{});
+}
+function mpToggle(){
+  if(!PLAYLIST.length)return toast('Henüz şarkı eklenmedi 🎵',1400);
+  if(mpAud.paused){mpWant=true;mpSave('want','1');mpFails=0;mpPlayNow()}
+  else{mpWant=false;mpSave('want','0');mpAud.pause()}
+  mpUI();
+}
+function mpStep(d){
+  if(!PLAYLIST.length)return;
+  const was=!mpAud.paused;
+  // şarkının ilk 3 saniyesinden sonra "önceki" şarkıyı baştan başlatır
+  if(d<0&&mpAud.currentTime>3){mpAud.currentTime=0;return}
+  mpLoad(mpIdx+d);
+  if(was||mpWant){mpWant=true;mpSave('want','1');mpPlayNow()}
+}
+function mpSeekTo(v){if(isFinite(mpAud.duration))mpAud.currentTime=mpAud.duration*v/1000}
+function mpMuteToggle(){mpAud.muted=!mpAud.muted;mpSave('muted',mpAud.muted?'1':'0');mpUI()}
+function mpVolume(v){mpAud.volume=v/100;if(mpAud.muted&&v>0){mpAud.muted=false;mpSave('muted','0')}mpSave('vol',v);mpUI()}
+function mpMin(min){
+  const el=document.getElementById('mp');
+  el.classList.toggle('min',min);mpSave('min',min?'1':'0');
+}
+// ilk oyun tıklamasında (tarayıcı izni için) başlat; kullanıcı kapattıysa başlatma
+function mpStart(){
+  if(mpStarted)return;mpStarted=true;
+  if(mpWant)mpPlayNow();
+}
+// mektup ekranında özel şarkı
+function mpFinal(){
+  const fi=PLAYLIST.findIndex(s=>s.final);
+  if(fi<0||fi===mpIdx)return;
+  mpLoad(fi);if(mpWant)mpPlayNow();
+}
+mpAud.addEventListener('ended',()=>{mpLoad(mpIdx+1);if(mpWant)mpPlayNow()});
+mpAud.addEventListener('error',()=>{
+  if(!PLAYLIST.length)return;
+  mpFails++;
+  if(mpFails<PLAYLIST.length){mpLoad(mpIdx+1);if(mpWant)mpPlayNow()}else mpUI();
+});
+mpAud.addEventListener('playing',()=>{mpFails=0;mpUI()});
+mpAud.addEventListener('play',mpUI);mpAud.addEventListener('pause',mpUI);
+mpAud.addEventListener('timeupdate',()=>{
+  if(!isFinite(mpAud.duration))return;
+  document.getElementById('mpSeek').value=mpAud.currentTime/mpAud.duration*1000;
+  document.getElementById('mpCur').textContent=mpFmt(mpAud.currentTime);
+});
+mpAud.addEventListener('loadedmetadata',()=>{document.getElementById('mpDur').textContent=mpFmt(mpAud.duration)});
+(function mpInit(){
+  mpWant=mpGet('want','1')!=='0';
+  const v=+mpGet('vol',50);mpAud.volume=v/100;document.getElementById('mpVol').value=v;
+  mpAud.muted=mpGet('muted','0')==='1';
+  // telefonda ilk açılışta küçük başlasın, kullanıcı seçtiyse onu koru
+  const minPref=mpGet('min',null);
+  if(minPref==='1'||(minPref===null&&innerWidth<600))document.getElementById('mp').classList.add('min');
+  if(PLAYLIST.length)mpLoad(0);
+  mpUI();
+})();
+
+// ================================================================
+// MİNİ OYUN GEÇİŞLERİ (6 bölümlük akış)
+// 1 Hafıza → 2 Sözcük → 3 Balon → 4 Labirent → 5 Kazı kazan → 6 Kalp yakala → Mektup
+// ================================================================
+function $(id){return document.getElementById(id)}
+function leaveMini(){stopBalloons();stopCatch()}
+function goBalloon(){leaveMini();wpToken++;showScreen('sB');startBalloons()}
+function goScratch(){leaveMini();mzToken++;showScreen('sK');startScratch()}
+function goCatch(){leaveMini();showScreen('sC');prepCatch()}
+// ================================================================
+// 1) BALON PATLATMA — 100 sebep
+// ================================================================
+// Sebepleri istediğin gibi değiştir. Sonuncusu (100.) her zaman en sonda çıkar.
+const REASONS=[
+  'Güldüğünde içim ısındığı için 🌞',
+  'Yanındayken zaman durduğu için ⏳',
+  'Beni olduğum gibi kabul ettiğin için 💞',
+  'Sesini duyunca günüm güzelleştiği için 🎶',
+  'Zor günlerimde yanımda olduğun için 🤝',
+  'Gözlerine baktığımda evimde gibi hissettiğim için 🏡',
+  'Beni en çok sen güldürdüğün için 😄',
+  'Küçük şeyleri bile özel yaptığın için ✨',
+  'Sana sarılınca her şey geçtiği için 🤗',
+  'Kalbin çok güzel olduğu için 💗',
+  'Seninle büyüdüğüm için 🌱',
+  'Her halini sevdiğim için 🌹',
+  'Beni anladığın için 🫶',
+  'Seninle hayal kurmak güzel olduğu için 🌙',
+  'Sen sen olduğun için 💌',
+  'Hatalarımla bile sevdiğin için 🕊️',
+  'Sabrın için 🌸',
+  'Her sabah ilk seni düşündüğüm için ☀️',
+  'Seninle her şey daha güzel olduğu için 🌈',
+  'Hayatımın en güzel hediyesi olduğun için 🎁',
+  'Bana inandığın için 🌟',
+  'Gülüşün bulaşıcı olduğu için 😊',
+  'Yanında kendim olabildiğim için 🦋',
+  'Elimi tuttuğunda korkularım kaybolduğu için 🤍',
+  'Beni sabırla dinlediğin için 👂',
+  'Mutluluğum seninle başladığı için 🎈',
+  'Seninle sessizlik bile güzel olduğu için 🤫',
+  'Her şeye rağmen yanımda kaldığın için 🛡️',
+  'Bana güvenmeyi öğrettiğin için 🔑',
+  'Kokun bile beni sakinleştirdiği için 🌷',
+  'Beni düşündüğünü hissettirdiğin için 📱',
+  'Seninle yemek bile bayram olduğu için 🍕',
+  'Sana her şeyi anlatabildiğim için 💬',
+  'Gözlerin yıldızlar gibi parladığı için ⭐',
+  'Seninle yaşlanmayı hayal ettiğim için 🏠',
+  'İyi ki varsın dediğim için 💐',
+  'Bana kendimi özel hissettirdiğin için 👑',
+  'Kötü günde bile gülümsemeyi bildiğin için 🌤️',
+  'Her şarkıda seni hatırladığım için 🎧',
+  'Seninle yağmur bile güzel olduğu için ☔',
+  'Sana bakınca içimin ısındığı için ☕',
+  'Beni hiç yalnız bırakmadığın için 🫂',
+  'Sabahları mesajına uyandığım için 💌',
+  'Seninle her an bir hatıra olduğu için 📸',
+  'Sevgini hep hissettirdiğin için 💖',
+  'Sana kavuşmak en güzel an olduğu için 🚪',
+  'Bana cesaret verdiğin için 🦁',
+  'Seninle her şeyin mümkün olduğunu bildiğim için 🚀',
+  'Dünyanın en güzel gülüşüne sahip olduğun için 😍',
+  'Seni sevmek çok kolay olduğu için 🪽',
+  'Her kavgadan sonra bile sana döndüğüm için 🔁',
+  'Sana yazarken içim gülümsediği için ✍️',
+  'Hayallerime ortak olduğun için 🎯',
+  'Seninle çocuk gibi eğlendiğim için 🎠',
+  'Kalbime iyi geldiğin için 🩹',
+  'Seni düşününce huzur bulduğum için 🕊️',
+  'Her zaman en iyisini istediğin için 🌻',
+  'Bana farklı bakmayı öğrettiğin için 🔭',
+  'Doğum günümü bile özel yaptığın için 🎂',
+  'Seninle uzak mesafe bile kısa geldiği için 🛤️',
+  'Sana sarılırken zamanın durduğunu hissettiğim için 🕰️',
+  'Sesindeki sıcaklık için 🔥',
+  'Beni gerçekten sevdiğin için 💘',
+  'En güzel anılarımda hep sen olduğun için 🎞️',
+  'Seninle her yer ev olduğu için 🏕️',
+  'Küçük jestlerinle büyük mutluluklar yarattığın için 🎀',
+  'İyi ki karşıma çıktığın için 🍀',
+  'Sana güvenebildiğim için 🔒',
+  'Gözlerinin içine bakınca kaybolduğum için 🌊',
+  'Seninle konuşmaktan hiç sıkılmadığım için 🗣️',
+  'Bana umut verdiğin için 🌅',
+  'Seninle her mevsim bahar olduğu için 🌸',
+  'Yanındayken huzur bulduğum için 🧘',
+  'Beni hayata bağladığın için ⚓',
+  'Hatalarımı affedebildiğin için 🤲',
+  'Seni sevmek hayatımı güzelleştirdiği için 🎨',
+  'Sana ait olmak güzel olduğu için 💍',
+  'Her gün seni biraz daha sevdiğim için 📈',
+  'Beni mutlu etmek için çabaladığın için 🎁',
+  'Bana hep kapını açık tuttuğun için 🚪',
+  'Kahkahanı duymak için her şeyi yapabileceğim için 🤣',
+  'Seninle rüyalar bile daha güzel olduğu için 💭',
+  'Hayatıma renk kattığın için 🌈',
+  'Bana her zaman iyi hissettirdiğin için 💫',
+  'Seninle sessiz anlar bile dolu olduğu için 🌌',
+  'Elimi bırakmadığın için 🤝',
+  'Yüreğinin güzelliği yüzüne vurduğu için 🌹',
+  'Seninle yürümek bile bir macera olduğu için 🗺️',
+  'Beni hep sevgiyle kucakladığın için 🧸',
+  'Bir bakışınla her şeyi anlattığın için 👀',
+  'Bana ev sıcaklığını verdiğin için 🛋️',
+  'Sensiz geçen bir gün eksik olduğu için 📅',
+  'Aşkın bana güç verdiği için 💪',
+  'Seninle her şey yeniden güzel olduğu için 🔄',
+  'Sana her baktığımda yeniden âşık olduğum için 😘',
+  'Hayatımın anlamını sen tamamladığın için 🧩',
+  'Seni sevmek en güzel alışkanlığım olduğu için 🌹',
+  'Sonsuza kadar yanında olmak istediğim için ♾️',
+  'Her şeyden önce en iyi arkadaşım olduğun için 🫶',
+  'Ve en önemlisi: seni çok seviyorum, o yüzden 💝',
+];
+const BALLOON_GOAL=REASONS.length;
+const BCOLORS=['linear-gradient(135deg,#ff69b4,#ff1493)','linear-gradient(135deg,#c77dff,#7b2cbf)',
+  'linear-gradient(135deg,#ff9ecd,#e0559a)','linear-gradient(135deg,#ff6b6b,#d62839)','linear-gradient(135deg,#ffb3d9,#ff69b4)'];
+const MILESTONES={25:'🎉 25 sebep! Daha yeni başlıyoruz',50:'💞 Yarı yoldayız, 50 sebep!',75:'🌹 75 sebep... durmak yok!',90:'✨ Son 10 sebep!'};
+let bS={on:false,deck:[],cnt:0,list:[],last:0,spawn:0,raf:0};
+
+function startBalloons(){
+  stopBalloons();
+  const area=$('bArea');
+  area.querySelectorAll('.balloon,.plus,.milestone').forEach(e=>e.remove());
+  $('bOver').classList.add('hide');
+  $('bGoal').textContent=BALLOON_GOAL;
+  $('bCnt').textContent='0';$('bBar').style.width='0';
+  $('reasonBox').textContent='Bir balon patlat... 🎈';
+  $('reasonLog').innerHTML='';
+  const deck=shuffle(REASONS.slice(0,-1)).concat(REASONS[REASONS.length-1]);
+  bS={on:true,deck,cnt:0,list:[],last:performance.now(),spawn:0,raf:0};
+  bS.raf=requestAnimationFrame(balloonLoop);
+}
+function stopBalloons(){bS.on=false;cancelAnimationFrame(bS.raf)}
+
+function spawnBalloon(){
+  const area=$('bArea');
+  const gold=Math.random()<.07;
+  const el=document.createElement('div');
+  el.className='balloon'+(gold?' gold':'');
+  el.style.left=(10+Math.random()*(area.clientWidth-96))+'px';
+  el.style.background=gold?'linear-gradient(135deg,#fff3a0,#ffc400)':BCOLORS[0|Math.random()*BCOLORS.length];
+  el.innerHTML='<div class="bh">'+(gold?'⭐':'💗')+'</div>';
+  const prog=bS.cnt/BALLOON_GOAL;
+  const b={el,gold,y:-100,speed:(70+Math.random()*60)*(1+prog*.9)*(gold?1.45:1),ph:Math.random()*6.28,amp:8+Math.random()*14,dead:false};
+  el.addEventListener('pointerdown',ev=>{ev.preventDefault();popBalloon(b,ev)});
+  area.appendChild(el);
+  bS.list.push(b);
+}
+function balloonLoop(now){
+  if(!bS.on)return;
+  const dt=Math.min((now-bS.last)/1000,.05);bS.last=now;
+  const area=$('bArea'),H=area.clientHeight;
+  bS.spawn-=dt;
+  if(bS.spawn<=0){
+    spawnBalloon();
+    const prog=bS.cnt/BALLOON_GOAL;
+    bS.spawn=(.75-prog*.35)+Math.random()*.45;
+  }
+  for(const b of bS.list){
+    if(b.dead)continue;
+    b.y+=b.speed*dt;
+    const sway=Math.sin(b.y/50+b.ph)*b.amp;
+    b.el.style.setProperty('--t',`translate(${sway}px,${-b.y}px)`);
+    b.el.style.transform=`translate(${sway}px,${-b.y}px)`;
+    if(b.y>H+120){b.dead=true;b.el.remove()}
+  }
+  bS.list=bS.list.filter(b=>!b.dead);
+  bS.raf=requestAnimationFrame(balloonLoop);
+}
+function popBalloon(b,ev){
+  if(!bS.on||b.dead)return;
+  b.dead=true;b.el.classList.add('pop');
+  setTimeout(()=>b.el.remove(),260);
+  const area=$('bArea'),r=area.getBoundingClientRect();
+  const n=Math.min(b.gold?3:1,BALLOON_GOAL-bS.cnt);
+  const p=document.createElement('div');p.className='plus';p.textContent=b.gold?'⭐ +3':'💗 +1';
+  p.style.left=(ev.clientX-r.left-18)+'px';p.style.top=(ev.clientY-r.top-18)+'px';
+  area.appendChild(p);setTimeout(()=>p.remove(),1000);
+  const reasons=bS.deck.slice(bS.cnt,bS.cnt+n);
+  const old=bS.cnt;bS.cnt+=n;
+  $('bCnt').textContent=bS.cnt;
+  $('bBar').style.width=(bS.cnt/BALLOON_GOAL*100)+'%';
+  const rb=$('reasonBox');rb.textContent='“'+reasons.join('  •  ')+'”';
+  rb.classList.remove('show');void rb.offsetWidth;rb.classList.add('show');
+  const log=$('reasonLog');
+  reasons.forEach(t=>{const c=document.createElement('span');c.className='chip';c.textContent=t;log.appendChild(c)});
+  log.scrollTop=log.scrollHeight;
+  for(const m in MILESTONES){
+    if(old<m&&bS.cnt>=m){
+      const ms=document.createElement('div');ms.className='milestone';ms.textContent=MILESTONES[m];
+      area.appendChild(ms);setTimeout(()=>ms.remove(),2500);
+    }
+  }
+  if(bS.cnt>=BALLOON_GOAL){
+    bS.on=false;cancelAnimationFrame(bS.raf);
+    setTimeout(()=>{area.querySelectorAll('.balloon').forEach(e=>e.remove());$('bOver').classList.remove('hide')},1100);
+  }
+}
+
+// ================================================================
+// 2) KAZI KAZAN — 100 kart, tek tek
+// ================================================================
+// Mesajları istediğin gibi değiştir. Son kart (100.) her zaman en sonda çıkar.
+const SCRATCH_MSG=[
+  '🌹 Seni çok seviyorum','💌 Beni affet, kalbim sende','💐 İyi ki varsın','🥺 Sensiz olmuyor',
+  '💖 Sen benim en güzel şansımsın','🌙 Uyumadan önce seni düşünüyorum','☀️ Her sabah ilk aklıma sen geliyorsun',
+  '🫶 Seninle her şey daha güzel','💞 Kalbim senin için çarpıyor','🕊️ Barışalım mı?','🌈 Sen hayatımın rengisin',
+  '✨ Gözlerin yıldız gibi parlıyor','🍀 Seninle şanslıyım','🌸 Gülüşün bahar gibi','🤍 Sana sonsuz teşekkürler',
+  '😘 Sana kocaman bir öpücük','💫 Kalbimin sahibi sensin','🎶 Sesin favori şarkım','🧸 Seni sıkıca saracağım',
+  '🌹 Her gün biraz daha seviyorum','💘 Sen benim her şeyimsin','🔑 Kalbimin anahtarı sende','🌟 Sen benim yıldızımsın',
+  '🫂 Bir sarılma hakkı kazandın','💋 Bir öpücük sana ait','💝 Seni kaybetmek istemiyorum','🏡 Sen benim evimsin',
+  '🦋 Karnımdaki kelebekler hâlâ yaşıyor','🌊 Gözlerinde kayboldum','💍 Sonsuza kadar yanındayım',
+  '🎬 Film gecesi benden','🍕 Akşam yemeği benden','🍫 Sana bir çikolata borcum var','☕ Bir kahve ısmarlıyorum',
+  '💆 Bir masaj hakkı kazandın','🍦 Dondurma benden','🍳 Sana kahvaltı hazırlıyorum','🎮 Oyun gecesi, kaybeden ısmarlar',
+  '🧁 Tatlı krizi mi? Benden','🛍️ Bir alışveriş turu hakkın var','🌅 Gün batımı yürüyüşü yapalım',
+  '📸 Birlikte fotoğraf çekilelim','🎁 Küçük bir hediye yolda','🚗 Uzun bir yol gezisine çıkalım','🍓 Çilekli bir akşam',
+  '🎤 Sana bir şarkı söyleyeceğim','🌹 Sana gül alıyorum','🍿 Mısır benden, film senden','🏖️ Deniz kenarında bir gün',
+  '🎡 Lunaparka gidelim','📚 Birlikte kitap okuyalım','🍲 Bu akşam yemek benden','🛏️ Bir sabah seni uyandırmıyorum',
+  '🕯️ Mumlu akşam yemeği','🎳 Bowling oynayalım','🧩 Birlikte yapboz yapalım','🥂 Kutlama yapalım',
+  '✈️ Hayalimizdeki seyahati planlayalım','🌃 Gece yürüyüşü yapalım','🍰 Birlikte pasta yapalım',
+  '📞 Bir gün boyunca istediğin an arayabilirsin','🎶 Birlikte şarkı listesi yapalım','🌠 Bir dilek tut',
+  '🧋 Bubble tea benden','🍔 Hamburger günü bende',
+  '🏔️ Dağ yürüyüşüne çıkalım','🎄 Birlikte bir yılbaşı geçirelim','🌍 Seninle dünyayı gezmek istiyorum',
+  '🐶 Birlikte bir yavru sahiplenelim','🏠 Küçük bir evimiz olsun','🌻 Bahçeli bir ev hayal ediyorum',
+  '🔭 Yıldızları seyredelim','🎢 Korkularıma seninle göğüs gerelim','🛶 Göl kenarında piknik',
+  '🍷 Yaşlandığımızda da el ele','🎈 Her yıl dönümünde sürpriz','📖 Anılarımızı bir kitaba yazalım',
+  '🌴 Bir gün tropik bir adada','🍂 Sonbaharda yaprak toplayalım','❄️ Kış günü battaniye altında çay',
+  '🌷 İlkbaharda çiçek toplayalım','🏄 Birlikte yeni bir şey öğrenelim','🎨 Birlikte resim yapalım',
+  '🧶 Sana atkı örüyorum','🎀 Hayatımıza güzel anılar ekleyelim',
+  '😍 Çok güzelsin','👑 Bugün de çok özelsin','🌞 Gülüşün günümü aydınlatıyor','💎 Sen eşsizsin',
+  '🤗 Kalbin altın gibi','🌹 Senin gibisi yok','💪 Çok güçlüsün','🧠 Çok zekisin','😊 Gülmeni seviyorum',
+  '🦄 Sen bir mucizesin','🌺 Her halin güzel','🍯 Tatlılığına doyamıyorum','🔥 Enerjin bulaşıcı','🥰 İyi ki benimlesin',
+  '💌 Seni çok seviyorum, barışalım mı? 🌹'
+];
+const SC_GOAL=SCRATCH_MSG.length;
+const SC_W=680,SC_H=420; // canvas iç çözünürlüğü (2x keskin)
+let sc={i:0,deck:[],revealed:false};
+
+function startScratch(){
+  const deck=shuffle(SCRATCH_MSG.slice(0,-1)).concat(SCRATCH_MSG[SCRATCH_MSG.length-1]);
+  sc={i:0,deck,revealed:false};
+  $('scOver').classList.add('hide');
+  $('scGoal').textContent=SC_GOAL;
+  renderScratch();
+}
+function renderScratch(){
+  $('scCnt').textContent=sc.i;
+  $('scBar').style.width=(sc.i/SC_GOAL*100)+'%';
+  $('scNext').style.display='none';
+  sc.revealed=false;
+  const row=$('scRow');row.innerHTML='';
+  const card=document.createElement('div');card.className='scard';
+  const msg=document.createElement('div');msg.className='smsg';msg.textContent=sc.deck[sc.i];
+  const cv=document.createElement('canvas');cv.width=SC_W;cv.height=SC_H;
+  card.appendChild(msg);card.appendChild(cv);row.appendChild(card);
+  setupScratchCanvas(cv);
+}
+function nextScratch(){
+  if(!sc.revealed)return;
+  if(sc.i>=SC_GOAL){return}
+  renderScratch();
+}
+document.addEventListener('keydown',e=>{
+  if(!$('sK').classList.contains('on'))return;
+  if((e.key==='Enter'||e.key===' ')&&$('scNext').style.display!=='none'){e.preventDefault();nextScratch()}
+});
+function setupScratchCanvas(cv){
+  const ctx=cv.getContext('2d');
+  const g=ctx.createLinearGradient(0,0,SC_W,SC_H);
+  g.addColorStop(0,'#d4d4dc');g.addColorStop(.5,'#9a9aa8');g.addColorStop(1,'#c4c4cf');
+  ctx.fillStyle=g;ctx.fillRect(0,0,SC_W,SC_H);
+  for(let i=0;i<420;i++){
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*.45})`;
+    ctx.fillRect(Math.random()*SC_W,Math.random()*SC_H,2+Math.random()*3,2+Math.random()*3);
+  }
+  ctx.fillStyle='rgba(80,40,110,.75)';ctx.font='bold 56px Segoe UI, sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('✨ KAZI ✨',SC_W/2,SC_H/2);
+  ctx.font='22px Segoe UI, sans-serif';ctx.fillText('Kart '+(sc.i+1)+' / '+SC_GOAL,SC_W/2,SC_H/2+52);
+  let drawing=false,done=false,lx=0,ly=0;
+  const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*SC_W/r.width,(e.clientY-r.top)*SC_H/r.height]};
+  const scratch=(x,y)=>{
+    ctx.globalCompositeOperation='destination-out';
+    ctx.lineWidth=60;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y,30,0,6.3);ctx.fill();
+    lx=x;ly=y;
+  };
+  const check=()=>{
+    if(done)return;
+    const d=ctx.getImageData(0,0,SC_W,SC_H).data;let clear=0,n=0;
+    for(let i=3;i<d.length;i+=32){n++;if(d[i]<40)clear++}
+    if(clear/n>.5){
+      done=true;cv.style.opacity='0';cv.style.pointerEvents='none';
+      sc.revealed=true;sc.i++;
+      $('scCnt').textContent=sc.i;
+      $('scBar').style.width=(sc.i/SC_GOAL*100)+'%';
+      if(sc.i>=SC_GOAL)setTimeout(()=>$('scOver').classList.remove('hide'),1800);
+      else setTimeout(()=>$('scNext').style.display='inline-block',500);
+    }
+  };
+  cv.addEventListener('pointerdown',e=>{drawing=true;cv.setPointerCapture(e.pointerId);[lx,ly]=pos(e);scratch(lx,ly)});
+  cv.addEventListener('pointermove',e=>{if(!drawing||done)return;const[x,y]=pos(e);scratch(x,y)});
+  const end=()=>{if(drawing){drawing=false;check()}};
+  cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+}
+
+// ================================================================
+// 3) KALP YAKALA — seviyeler, can, bomba, güçlendirmeler
+// ================================================================
+const CATCH_GOAL=100,MAX_LIVES=3,MAX_LEVEL=5;
+let GW=760,GH=480;
+const HEARTS=['💗','💖','💕','💓','❤️'];
+let cg={on:false,raf:0,last:0,items:[],score:0,lives:MAX_LIVES,level:1,spawn:0,bx:GW/2,tx:GW/2,
+  slow:0,mag:0,shield:false,shake:0,banner:0,keys:{}};
+let flashC=null,flashT=0;
+
+function livesText(){return '❤️'.repeat(cg.lives)+'🖤'.repeat(MAX_LIVES-cg.lives)}
+function hud(){$('gScore').textContent=cg.score;$('gLevel').textContent=cg.level;$('gLives').textContent=livesText()}
+function setCatchSize(){
+  const narrow=innerWidth<700;
+  GW=narrow?420:760;GH=narrow?560:480;
+  const c=document.getElementById('gc');c.width=GW;c.height=GH;
+}
+function prepCatch(){
+  setCatchSize();
+  $('gGoal').textContent=CATCH_GOAL;
+  $('gStart').classList.remove('hide');$('gWin').classList.add('hide');$('gLose').classList.add('hide');
+  cg.items=[];cg.score=0;cg.lives=MAX_LIVES;cg.level=1;cg.slow=cg.mag=0;cg.shield=false;cg.shake=0;cg.banner=0;
+  cg.bx=cg.tx=GW/2;hud();drawCatch();
+}
+function stopCatch(){cg.on=false;cancelAnimationFrame(cg.raf)}
+function startCatch(){
+  stopCatch();setCatchSize();
+  cg={on:true,raf:0,last:performance.now(),items:[],score:0,lives:MAX_LIVES,level:1,spawn:.5,bx:GW/2,tx:GW/2,
+    slow:0,mag:0,shield:false,shake:0,banner:0,keys:cg.keys||{}};
+  hud();
+  $('gStart').classList.add('hide');$('gWin').classList.add('hide');$('gLose').classList.add('hide');
+  cg.raf=requestAnimationFrame(catchLoop);
+}
+const gc=$('gc'),gx=gc.getContext('2d');
+gc.addEventListener('pointermove',e=>{const r=gc.getBoundingClientRect();cg.tx=(e.clientX-r.left)*GW/r.width});
+gc.addEventListener('pointerdown',e=>{const r=gc.getBoundingClientRect();cg.tx=(e.clientX-r.left)*GW/r.width});
+document.addEventListener('keydown',e=>{
+  if(!$('sC').classList.contains('on'))return;
+  const k=e.key.toLowerCase();
+  if(['arrowleft','arrowright','a','d'].includes(k)){cg.keys[k]=true;e.preventDefault()}
+});
+document.addEventListener('keyup',e=>{cg.keys[e.key.toLowerCase()]=false});
+
+function pickItem(){
+  const lv=cg.level;
+  let r=Math.random()*100;
+  const bomb=7+lv*2.5;            // seviye 1: %9.5 ... seviye 5: %19.5
+  if(r<bomb)return{k:'bomb',e:'💣'};  r-=bomb;
+  if(r<9)return{k:'broken',e:'💔'};   r-=9;
+  if(r<5)return{k:'gold',e:'💛'};     r-=5;
+  if(r<3.5)return{k:'clock',e:'⏳'};   r-=3.5;
+  if(r<3.5)return{k:'magnet',e:'🧲'}; r-=3.5;
+  if(r<3)return{k:'shield',e:'🛡️'};
+  return{k:'heart',e:HEARTS[0|Math.random()*HEARTS.length]};
+}
+function flash(c){flashC=c;flashT=.2}
+function loseLife(){
+  if(cg.shield){cg.shield=false;flash('#44aaff');return}
+  cg.lives--;cg.shake=.35;flash('#ff2244');hud();
+  if(cg.lives<=0){
+    cg.on=false;drawCatch();
+    $('gLoseTxt').textContent=`Puanın: ${cg.score} / ${CATCH_GOAL}. Tekrar dene, bombalardan kaç! 💣`;
+    setTimeout(()=>$('gLose').classList.remove('hide'),500);
+  }
+}
+function catchLoop(now){
+  if(!cg.on)return;
+  const dt=Math.min((now-cg.last)/1000,.05);cg.last=now;
+  const fall=cg.slow>0?.45:1;
+  cg.slow=Math.max(0,cg.slow-dt);cg.mag=Math.max(0,cg.mag-dt);
+  cg.shake=Math.max(0,cg.shake-dt);cg.banner=Math.max(0,cg.banner-dt);
+  // sepet
+  const kx=((cg.keys.arrowright||cg.keys.d)?1:0)-((cg.keys.arrowleft||cg.keys.a)?1:0);
+  if(kx)cg.tx+=kx*640*dt;
+  cg.tx=Math.max(45,Math.min(GW-45,cg.tx));
+  cg.bx+=(cg.tx-cg.bx)*Math.min(1,dt*16);
+  // üret
+  cg.spawn-=dt;
+  if(cg.spawn<=0){
+    const it=pickItem();
+    it.x=30+Math.random()*(GW-60);it.y=-30;
+    it.v=(120+Math.random()*90)*(1+(cg.level-1)*.17);
+    cg.items.push(it);
+    cg.spawn=Math.max(.32,.9-(cg.level-1)*.12);
+  }
+  const by=GH-62;
+  for(let i=cg.items.length-1;i>=0;i--){
+    const h=cg.items[i];
+    h.y+=h.v*dt*fall;
+    const good=h.k!=='bomb'&&h.k!=='broken';
+    if(cg.mag>0&&good){h.x+=(cg.bx-h.x)*Math.min(1,dt*3.2)}
+    if(h.y>by-14&&h.y<by+26&&Math.abs(h.x-cg.bx)<52){
+      cg.items.splice(i,1);
+      if(h.k==='heart'){cg.score++;flash('#ff69b4')}
+      else if(h.k==='gold'){cg.score+=5;flash('#ffd700')}
+      else if(h.k==='broken'){cg.score=Math.max(0,cg.score-1);flash('#ff2244')}
+      else if(h.k==='bomb'){loseLife();if(!cg.on)return}
+      else if(h.k==='clock'){cg.slow=6;flash('#66ccff')}
+      else if(h.k==='magnet'){cg.mag=7;flash('#cc66ff')}
+      else if(h.k==='shield'){cg.shield=true;flash('#44aaff')}
+      const nl=Math.min(MAX_LEVEL,1+Math.floor(cg.score/20));
+      if(nl>cg.level){cg.level=nl;cg.banner=1.8}
+      hud();
+      if(cg.score>=CATCH_GOAL){cg.on=false;drawCatch();setTimeout(()=>$('gWin').classList.remove('hide'),400);return}
+    }else if(h.y>GH+30){cg.items.splice(i,1)}
+  }
+  drawCatch();
+  cg.raf=requestAnimationFrame(catchLoop);
+}
+function drawCatch(){
+  gx.save();
+  gx.clearRect(0,0,GW,GH);
+  if(cg.shake>0)gx.translate((Math.random()-.5)*10,(Math.random()-.5)*10);
+  if(flashT>0){gx.fillStyle=flashC;gx.globalAlpha=Math.min(.24,flashT);gx.fillRect(0,0,GW,GH);gx.globalAlpha=1;flashT-=.016}
+  gx.textAlign='center';gx.textBaseline='middle';
+  gx.font='36px serif';
+  for(const h of cg.items){
+    if(h.k==='gold'){gx.shadowColor='#ffd700';gx.shadowBlur=18}
+    gx.fillText(h.e,h.x,h.y);gx.shadowBlur=0;
+  }
+  gx.font='70px serif';
+  gx.fillText('🧺',cg.bx,GH-48);
+  if(cg.shield){gx.font='28px serif';gx.fillText('🛡️',cg.bx,GH-90)}
+  // aktif güçlendirmeler
+  gx.font='15px Segoe UI, sans-serif';gx.textAlign='right';gx.fillStyle='#ffddee';
+  let ty=22;
+  if(cg.slow>0){gx.fillText('⏳ Yavaş '+cg.slow.toFixed(1)+'s',GW-12,ty);ty+=22}
+  if(cg.mag>0){gx.fillText('🧲 Mıknatıs '+cg.mag.toFixed(1)+'s',GW-12,ty);ty+=22}
+  if(cg.shield){gx.fillText('🛡️ Kalkan hazır',GW-12,ty)}
+  // seviye başlığı
+  if(cg.banner>0){
+    gx.globalAlpha=Math.min(1,cg.banner);gx.textAlign='center';
+    gx.font='bold 46px Segoe UI, sans-serif';gx.fillStyle='#ffd9ec';
+    gx.shadowColor='#ff69b4';gx.shadowBlur=20;
+    gx.fillText('Seviye '+cg.level+'!',GW/2,GH/2-40);gx.shadowBlur=0;gx.globalAlpha=1;
+  }
+  gx.restore();
+}
+drawCatch();
+
+
+// labirent: dokunmatikte parmağı sürükleyerek yürüme
+(function(){
+  const cv=document.getElementById('mazeCanvas');let ox=0,oy=0,act=false;
+  cv.style.touchAction='none';
+  cv.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;act=true;ox=e.clientX;oy=e.clientY;try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+  cv.addEventListener('pointermove',e=>{
+    if(!act)return;
+    const dx=e.clientX-ox,dy=e.clientY-oy,th=Math.max(16,MCELL*.7);
+    if(Math.abs(dx)<th&&Math.abs(dy)<th)return;
+    if(Math.abs(dx)>Math.abs(dy))mp(dx>0?'r':'l');else mp(dy>0?'d':'u');
+    ox=e.clientX;oy=e.clientY;
+  });
+  cv.addEventListener('pointerup',()=>act=false);cv.addEventListener('pointercancel',()=>act=false);
+})();
+</script>
+</body>
+</html>
